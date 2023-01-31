@@ -2,6 +2,7 @@
 import os
 import sys
 import random
+from neuralintents import GenericAssistant
 
 def speak(text):
     os.system(f'flite -t "{text}" -voice slt')
@@ -16,21 +17,24 @@ def rick():
 def play_music(i):
     wake_up = "https://www.youtube.com/watch?v=8iVm-AEj2q8&list=PLqyqpQSr8-cYQfLx9U24y303hd8X4VR7A&index=1"
     aggressive = "https://www.youtube.com/watch?v=rf7LrcGQxXQ&list=PLqyqpQSr8-cb5baRWvO4pZg56k1aYOSKP&index=1"
-    if i == 0:
+    if "aggressive":
         os.system(f"firefox '{wake_up}'")
         speak("Okay, I'm playing wake up playlist!")
     elif i == 1:
         os.system(f"firefox '{aggressive}'")
         speak("Okay, I'm playing agressive playlist!")
+    
 
-if __name__ == "__main__":
-    query = " ".join(sys.argv[1:]).lower()
-    if "rick" in query:
-        rick()
-    elif "play" in query and ("playlist" in query or "music" in query):
-        if "wake up" in query or "wakeup" in query or "0" in query:
-            play_music(0)
-        elif "aggressive" in query or "1" in query:
-            play_music(1)
-        else:
-            play_music(random.choice([0,1]))
+mappings = {
+        "rick": rick,
+        "music": play_music
+        }
+
+ai = GenericAssistant("intents.json", model_name="Stella", intent_methods=mappings)
+try:
+    ai.load_model("/home/luka/Science/Stella")
+except Exception:
+    ai.train_model()
+    ai.save_model("/home/luka/Science/Stella")
+
+ai.request(" ".join(sys.argv[1:]))

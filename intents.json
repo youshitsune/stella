@@ -1,0 +1,8 @@
+{"intents": [
+    {"tag": "rick",
+    "patterns": ["Say some rick quotes", "Motivation", "Rick stuff", "rick"],
+    "responses": [""]},
+    {"tag": "music",
+    "patterns": ["Play some music", "Play my favorite playlist", "Play my playlist"],
+    "responses": [""]}
+]}
