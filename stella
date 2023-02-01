@@ -11,26 +11,55 @@ def rick():
     with open("/home/luka/Science/rick.txt", "r") as f:
         rick = f.read().split(";")
     quote = random.choice(rick)
-    os.system(f'herbe "{quote}" &')
     speak(quote)
 
-def play_music(i):
+def play_music():
     wake_up = "https://www.youtube.com/watch?v=8iVm-AEj2q8&list=PLqyqpQSr8-cYQfLx9U24y303hd8X4VR7A&index=1"
     aggressive = "https://www.youtube.com/watch?v=rf7LrcGQxXQ&list=PLqyqpQSr8-cb5baRWvO4pZg56k1aYOSKP&index=1"
-    if "aggressive":
-        os.system(f"firefox '{wake_up}'")
-        speak("Okay, I'm playing wake up playlist!")
-    elif i == 1:
+    if "aggressive" in sys.argv[1:] or "0" in sys.argv[1:]:
         os.system(f"firefox '{aggressive}'")
-        speak("Okay, I'm playing agressive playlist!")
+        speak("Okay, I'm playing aggressive playlist!")
+    elif "wakeup" in sys.argv[1:] or "1" in sys.argv[1:] or "wake up" in sys.argv[1:]:
+        os.system(f"firefox '{wake_up}'")
+        speak("Okay, I'm playing wakeup playlist!")
+    else:
+        a = random.choice([wake_up, aggressive])
+        os.system(f"firefox {a}")
+        if a == wake_up:
+            speak(f"Okay, I'm playing wake up playlist!")
+        else:
+            speak(f"Okay, I'm playing aggressive playlist!")
+
+def list_projects_names():
+    with open("projects.txt", "r") as f:
+        projects = f.read().split(";")
     
+    projects_names = []
+    for i in projects:
+        projects_names.append(i.split(":")[0])
+
+    speak(f"Your projects are: {','.join(projects_names)}")
+
+def list_projects_status():
+    with open("projects.txt", "r") as f:
+        projects = f.read().split(";")
+
+    for i in range(len(projects)):
+        name = projects[i].split(":")[0]
+        status = projects[i].split(":")[1]
+
+        projects[i] = f"{name} is {status}"
+
+    speak(f"Statuses of your projects are: {','.join(projects)}")
 
 mappings = {
         "rick": rick,
-        "music": play_music
+        "music": play_music,
+        "list_projects": list_projects_names,
+        "list_status": list_projects_status
         }
 
-ai = GenericAssistant("intents.json", model_name="Stella", intent_methods=mappings)
+ai = GenericAssistant("/home/luka/Projects/Stella/intents.json", model_name="Stella", intent_methods=mappings)
 try:
     ai.load_model("/home/luka/Science/Stella")
 except Exception:
@@ -38,3 +67,4 @@ except Exception:
     ai.save_model("/home/luka/Science/Stella")
 
 ai.request(" ".join(sys.argv[1:]))
+

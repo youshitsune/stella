@@ -4,5 +4,11 @@
     "responses": [""]},
     {"tag": "music",
     "patterns": ["Play some music", "Play my favorite playlist", "Play my playlist"],
+    "responses": [""]},
+    {"tag": "list_projects",
+    "patterns": ["List my projects", "Tell me project names"],
+    "response": [""]},
+    {"tag": "list_status",
+    "patterns": ["What is their status?", "Tell me project status", "List status"],
     "responses": [""]}
 ]}
