@@ -2,7 +2,10 @@
 import os
 import sys
 import random
-from neuralintents import GenericAssistant
+from collections import defaultdict
+from gensim import corpora
+from gensim import models
+from gensim import similarities
 
 def speak(text):
     os.system(f'flite -t "{text}" -voice slt')
@@ -52,19 +55,54 @@ def list_projects_status():
 
     speak(f"Statuses of your projects are: {','.join(projects)}")
 
-mappings = {
-        "rick": rick,
-        "music": play_music,
-        "list_projects": list_projects_names,
-        "list_status": list_projects_status
-        }
+documents = [
+        "Play music",
+        "Play my favorite music",
+        "Play a playlist",
+        "Tell me Rick stuff",
+        "Rick",
+        "Rick quotes"
+]
 
-ai = GenericAssistant("/home/luka/Projects/Stella/intents.json", model_name="Stella", intent_methods=mappings)
-try:
-    ai.load_model("/home/luka/Science/Stella")
-except Exception:
-    ai.train_model()
-    ai.save_model("/home/luka/Science/Stella")
+stoplist = set('for a of the and to in'.split())
+texts = [
+        [word for word in document.lower().split() if word not in stoplist]
+        for document in documents
+]
 
-ai.request(" ".join(sys.argv[1:]))
+frequency = defaultdict(int)
+for text in texts:
+    for token in text:
+        frequency[token] += 1
+
+texts = [
+    [token for token in text if frequency[token] > 1]
+    for text in texts
+]
+
+dictionary = corpora.Dictionary(texts)
+corpus = [dictionary.doc2bow(text) for text in texts]
+
+lsi = models.LsiModel(corpus, id2word=dictionary, num_topics=2)
+
+doc = " ".join(sys.argv[1:])
+vec_bow = dictionary.doc2bow(doc.lower().split())
+vec_lsi = lsi[vec_bow]
+print(vec_lsi)
+
+index = similarities.MatrixSimilarity(lsi[corpus])
+
+index.save("/tmp/stella.index")
+index = similarities.MatrixSimilarity.load("/tmp/stella.index")
+
+sims = index[vec_lsi]
+
+n = list(enumerate(sims))
+
+n.sort(reverse=True, key=lambda x: x[1])
+
+if n[0][0] in [0, 1, 2]:
+    play_music()
+elif n[0][0] in [3,4,5]:
+    rick()
 
