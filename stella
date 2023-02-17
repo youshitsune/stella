@@ -106,7 +106,7 @@ print(vec_lsi)
 index = similarities.MatrixSimilarity(lsi[corpus])
 
 index.save("/home/luka/Projects/stella.index")
-index = similarities.MatrixSimilarity.load("/home/luka/Projects/stella.index")
+index = similarities.MatrixSimilarity.load("/home/luka/Projects/Stella/stella.index")
 
 sims = index[vec_lsi]
 
