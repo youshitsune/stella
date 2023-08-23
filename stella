@@ -11,9 +11,12 @@ from gensim import models
 from gensim import similarities
 import pyautogui
 from time import sleep
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 engine = pyttsx3.init()
 recognizer = sr.Recognizer()
+model = None
+tokenizer = None
 
 def speak(text):
     engine.say(text)
@@ -28,6 +31,17 @@ def listen():
     ctx = json.loads(recognizer.recognize_vosk(data))
     print(ctx["text"])
     return ctx["text"]
+
+def ai(ctx):
+    global model, tokenizer
+    if model and tokenizer:
+        input_ids = tokenizer(ctx, return_tensors="pt").input_ids
+        speak(tokenizer.decode(model.generate(input_ids)[0], skip_special_tokens=True))
+    else:
+        model = AutoModelForSeq2SeqLM.from_pretrained("google/t5-small-ssm-nq")
+        tokenizer = AutoTokenizer.from_pretrained("google/t5-small-ssm-nq")
+        input_ids = tokenizer(ctx, return_tensors="pt").input_ids
+        speak(tokenizer.decode(model.generate(input_ids)[0], skip_special_tokens=True))
 
 def win(commands):
     pyautogui.keyDown("win")
@@ -144,4 +158,4 @@ elif n[0][0] in [10, 11, 12]:
 elif n[0][0] in [13, 14, 15]:
     pause_music()
 else:
-    ask_ai(doc)
+    ai(doc)
