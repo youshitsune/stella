@@ -49,12 +49,6 @@ def win(commands):
         pyautogui.press(str(i))
     pyautogui.keyUp("win")
 
-def rick():
-    with open("/home/luka/Science/rick.txt", "r") as f:
-        rick = f.read().split(";")
-    quote = random.choice(rick)
-    speak(quote)
-
 def play_music():
     win([9, "s"])
     pyautogui.write("st cmus")
@@ -70,45 +64,14 @@ def pause_music():
     win([1])
     speak("I have paused your music.")
 
-def list_projects_names():
-    with open("projects.txt", "r") as f:
-        projects = f.read().split(";")
-    
-    projects_names = []
-    for i in projects:
-        projects_names.append(i.split(":")[0])
-
-    speak(f"Your projects are: {','.join(projects_names)}")
-
-def list_projects_status():
-    with open("projects.txt", "r") as f:
-        projects = f.read().split(";")
-
-    for i in range(len(projects)):
-        name = projects[i].split(":")[0]
-        status = projects[i].split(":")[1]
-
-        projects[i] = f"{name} is {status}"
-
-    speak(f"Statuses of your projects are: {','.join(projects)}")
-
 documents = [
         "Empty",
         "Play music",
         "Play my favorite music",
         "Play a playlist",
-        "Tell me Rick stuff",
-        "Rick",
-        "Rick quotes",
-        "List my projects",
-        "Tell me mine projects",
-        "Say me projects",
-        "List project status",
-        "Tell me project status",
-        "Say me project status",
-        "Stop my music",
-        "Stop music",
-        "Stop playing music"
+        "Pause my music",
+        "Pause music",
+        "Pause playing music"
 ]
 
 stoplist = set('for a of the and to in'.split())
@@ -149,13 +112,7 @@ n.sort(reverse=True, key=lambda x: x[1])
 
 if n[0][0] in [1, 2, 3]:
     play_music()
-elif n[0][0] in [4,5,6]:
-    rick()
-elif n[0][0] in [7,8,9]:
-    list_projects_names()
-elif n[0][0] in [10, 11, 12]:
-    list_projects_status()
-elif n[0][0] in [13, 14, 15]:
+elif n[0][0] in [4, 5, 6]:
     pause_music()
 else:
     ai(doc)
