@@ -2,7 +2,6 @@
 import os
 import sys
 import random
-import pyttsx3
 import speech_recognition as sr
 import json
 from collections import defaultdict
@@ -11,16 +10,23 @@ from gensim import models
 from gensim import similarities
 import pyautogui
 from time import sleep
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, AutoProcessor, AutoModel
+import scipy
 
-engine = pyttsx3.init()
+processor = AutoProcessor.from_pretrained("suno/bark-small")
+tts_model = AutoModel.from_pretrained("suno/bark-small")
+sampling_rate = tts_model.generation_config.sample_rate
 recognizer = sr.Recognizer()
 model = None
 tokenizer = None
 
 def speak(text):
-    engine.say(text)
-    engine.runAndWait()
+    global processor, tts_model, sampling_rate
+    inputs = processor(text=[text], return_tensors="pt",)
+    speech_values = tts_model.generate(**inputs, do_sample=True)
+    scipy.io.wavfile.write("speak.wav", rate=sampling_rate, data=speech_values.cpu().numpy().squeeze())
+    os.system("aplay speak.wav")
+    os.remove("speak.wav")
 
 def listen():
     os.system("arecord -d 5 -f cd --file-type wav audio.wav")
