@@ -1,45 +1,31 @@
 #!/usr/bin/python3
 import os
-import sys
 import random
-import speech_recognition as sr
-import json
+import whisper
 from collections import defaultdict
 from gensim import corpora
 from gensim import models
 from gensim import similarities
 import pyautogui
 from time import sleep
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, AutoProcessor, AutoModel
-import scipy
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-processor = AutoProcessor.from_pretrained("suno/bark-small")
-tts_model = AutoModel.from_pretrained("suno/bark-small")
-sampling_rate = tts_model.generation_config.sample_rate
-recognizer = sr.Recognizer()
-model = None
-tokenizer = None
+stt_model = whisper.load_model("tiny.en")
+t5_model = None
+t5_tokenizer = None
 
 def speak(text):
-    global processor, tts_model, sampling_rate
-    inputs = processor(text=[text], return_tensors="pt",)
-    speech_values = tts_model.generate(**inputs, do_sample=True)
-    scipy.io.wavfile.write("speak.wav", rate=sampling_rate, data=speech_values.cpu().numpy().squeeze())
-    os.system("aplay speak.wav")
-    os.remove("speak.wav")
+    os.system(f"flite -t '{text}' -voice /opt/flite/cmu_us_slt.flitevox")
 
 def listen():
+    speak("What you need?")
     os.system("arecord -d 5 -f cd --file-type wav audio.wav")
-    with sr.AudioFile("audio.wav") as source:
-        recognizer.adjust_for_ambient_noise(source)
-        data = recognizer.record(source)
+    result = whisper.transcribe(model, "audio.wav")
     os.remove("audio.wav")
-    ctx = json.loads(recognizer.recognize_vosk(data))
-    print(ctx["text"])
-    return ctx["text"]
+    return result["text"]
 
 def ai(ctx):
-    global model, tokenizer
+    global t5_model, t5_tokenizer
     if model and tokenizer:
         input_ids = tokenizer(ctx, return_tensors="pt").input_ids
         speak(tokenizer.decode(model.generate(input_ids)[0], skip_special_tokens=True))
@@ -118,7 +104,10 @@ n.sort(reverse=True, key=lambda x: x[1])
 
 if n[0][0] in [1, 2, 3]:
     play_music()
+    listen()
 elif n[0][0] in [4, 5, 6]:
     pause_music()
+    listen()
 else:
     ai(doc)
+    listen()
